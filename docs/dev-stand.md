@@ -9,11 +9,11 @@ research use). Upstream covers CIC and iDrive 5–8; this page concerns NBT EVO 
 with a Linux/WSL path below. The stand is a developer convenience, not part of evocode.
 
 Checked against upstream `main` [`d03ecd84f363`](https://github.com/herrbimmer/IDEmu/tree/d03ecd84f363)
-on 2026-11-20: [Linux/WSL](https://github.com/herrbimmer/IDEmu/blob/d03ecd84f363/docs/LINUX.md) and a
+on 2026-11-21: [Linux/WSL](https://github.com/herrbimmer/IDEmu/blob/d03ecd84f363/docs/LINUX.md) and a
 validated [18-03 shim profile](https://github.com/herrbimmer/IDEmu/blob/d03ecd84f363/docs/NBT_PROFILES.md)
 are merged. [PR #16](https://github.com/herrbimmer/IDEmu/pull/16) remains open and unmerged: its head
-[`d73b049`](https://github.com/FreZZZeR/IDEmu/commit/d73b049d8f69e146b08018e8204a516a9bb7b501) includes main `d03ecd8`; GitHub reports
-`mergeable=true`, `clean` as of 2026-11-20. The registry remains outside upstream `main`.
+[`e751e38`](https://github.com/FreZZZeR/IDEmu/commit/e751e38db9edc9fc65e9fd57b02662ece34c7a98) includes main `d03ecd8`; GitHub reports
+`mergeable=true`, `clean` as of 2026-11-21. The registry remains outside upstream `main`.
 Four exact `007` sets (`007_051_002`, `007_001_016`, `007_030_001`, `007_039_008`) were rebuilt and
 cold-booted to a live HMI on that branch on 2026-11-20, with exact companion hashes and 29 address
 overrides. The older boot/SSH observations below date from 2026-11-11.
@@ -84,12 +84,14 @@ For NBT EVO (iDrive6) it needs **three containers, all the same version**:
 | HMI | `swfl_00002720.bin.<version>` | ~710 MB |
 | brand | `swfl_00002719.bin.<version>` | ~480 MB |
 
-**Match the shim profile, not just the version label.** Upstream now has two fixed-address profiles:
+**Match the shim profile, not just the version label.** The first two profiles below are upstream;
+the exact `006016` profile was validated in our [fork](https://github.com/FreZZZeR/IDEmu/commit/e751e38db9edc9fc65e9fd57b02662ece34c7a98) on 2026-11-21:
 
 | Environment `shim_profile` | HMI SWFL | Validated scope |
 |---|---|---|
 | omitted / `default` | `007_051_002` (24-03) | Existing IDEmu functionality |
 | `1803` | `006_017_006` (18-03) | Home screen, map-surface redirection, rotor and buttons |
+| `006016` (fork) | `006_016_002` (N18032I, Build 66) | Cold boot, HMI/plugins, direct controller/rotor input; scoped N57/CarPlay/Android Auto checks below |
 
 The builder checks `HmiMain3D`, `libhmicom.so` and `libhmicoding.so` hashes against
 `idemu/data/known_hmi.json`; `build.json` must report `hmi_validated: true`. A neighbouring firmware
@@ -107,9 +109,27 @@ The wizard/API create/update do not persist this field. The build-time `SHIM_PRO
 the environment profile. Do not mix the generated `lib` and `lib-1803`
 DSOs. Touch, TPM, Lua/debug hooks and snapshot restore are **not validated** for 18-03.
 
-Our `006_016_002` is a different firmware: neither upstream 18-03 nor the four `007` registry
-profiles validate its HMI/plugin ABI. A full matching SWFL set and a validated shim profile are
-still missing for that exact stand. Linux/WSL and a new 18-03 boot were not rerun locally.
+The full matching OS/HMI/brand set for `006_016_002 / NBTevo_N18032I / ID5_1803-510-1749I Build 66`
+is now available locally. The fork's `006016` profile requires its exact HMI (`084d0d32...`), companion
+libraries and `libc.so.3`; it is not the upstream `1803` profile and not a 29-address registry entry.
+Build its separate shim and select it explicitly in the stopped environment's `env.json`:
+
+```bash
+SHIM_PROFILE=006016 bash src/shim/build.sh /path/to/006_016_002/boot/lib/libc.so.3
+# env.json: "shim_profile": "006016"
+```
+
+On 2026-11-21, an isolated cold boot used 2048 MiB, two Cortex-A15 cores, F30/1280×480 and synthetic
+coding (`A4A=1`). All six N57 reference app pages opened with synthetic loopback HSFZ readings.
+CarPlay used the existing generic scanner plus exact Build 66 `build.tab`: all 26 patch words and
+both hook jumps/targets were read back, its settings pages opened, and the full-width ini/wrapper
+setup passed. The HMI had no exit/core during the 291-second combined observation. A separate run
+with NBT-AAD v1.9.116 / rhmiapp-93 plus two local UI fixes checked 18 checkboxes, eight radio choices,
+saved settings and Start/Restart/Stop over 587 seconds without an HMI exit. Native Screen buffer
+creation is explicitly refused, not emulated; USB/AOA and live phone/video/audio/HUD were not tested.
+Default CCS input and map rendering were not validated for `006016`; direct controller/rotor input was.
+These checks did not validate `NBTCarHU`, FSC, real ECU values or vehicle actuation. Touch, TPM,
+Lua/debug hooks and snapshot restore remain unvalidated; Linux/WSL was not rerun locally.
 For PR #16 environments, old manifests without companion hashes require a full rebuild from
 the original SWFL before shim refresh/coding flash; back up local image changes first.
 

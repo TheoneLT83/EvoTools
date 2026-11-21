@@ -75,12 +75,16 @@ container fits: all key off those two ids *and their versions*. Read the SVK fir
 **Rehearsing without a car.** Part of the firmware-file (filesystem-plane) work can be tried in an
 emulator first: [IDEmu](https://github.com/herrbimmer/IDEmu) runs original BMW head-unit software under
 QEMU (CIC and iDrive 5–8). For NBT EVO / iDrive 5/6 it supports macOS and Linux/WSL, real HMI, virtual
-CAN/GPS, cluster/HUD, SSH and a coding editor. As checked on 2026-11-20, upstream has exact-match
+CAN/GPS, cluster/HUD, SSH and a coding editor. As checked on 2026-11-21, upstream has exact-match
 24-03 (`007_051_002`) and 18-03 (`006_017_006`) HMI shim profiles; the broader multi-firmware registry
-in [PR #16](https://github.com/herrbimmer/IDEmu/pull/16) is open and unmerged. As checked on 2026-11-20, its head
-[`d73b049`](https://github.com/FreZZZeR/IDEmu/commit/d73b049d8f69e146b08018e8204a516a9bb7b501) includes main `d03ecd8` and has `mergeable=true`, `clean`.
-Our `006_016_002` has no validated profile; the neighbouring `006_017_006` does not establish its
-HMI/plugin ABI compatibility. Use a matching profile to rehearse a patched `NBTCarHU` and HMI/plugins; a guest that boots without running `NBTCarHU` has not
+in [PR #16](https://github.com/herrbimmer/IDEmu/pull/16) is open and unmerged. As checked on 2026-11-21, its head
+[`e751e38`](https://github.com/FreZZZeR/IDEmu/commit/e751e38db9edc9fc65e9fd57b02662ece34c7a98) includes main `d03ecd8` and has `mergeable=true`, `clean`.
+The exact `006_016_002 / NBTevo_N18032I / Build 66` full SWFL set and guarded `006016` profile were
+validated locally on 2026-11-21 in the [fork](https://github.com/FreZZZeR/IDEmu/commit/e751e38db9edc9fc65e9fd57b02662ece34c7a98), outside upstream:
+cold boot, direct controller/rotor input, six N57 app pages, CarPlay patches/menus and Android Auto options/service lifecycle.
+Default CCS input and map rendering were not validated for this profile.
+These scoped checks used synthetic data; real phones, video/audio, HUD and vehicle functions remain unverified.
+Use a matching profile to rehearse a patched `NBTCarHU` and HMI/plugins; a guest that boots without running `NBTCarHU` has not
 validated that binary. IDEmu still exposes no HSFZ diagnostic endpoint (TCP 6801), so
 `read`/`write`/`fsc apply`/`root` need a real unit or a mock. Its host-rendered map is not BMW route
 guidance or an FSC acceptance test. (License: PolyForm Noncommercial.) Setup, transfer limitations and

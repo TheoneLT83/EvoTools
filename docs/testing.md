@@ -12,16 +12,23 @@ For evocode, use it to rehearse a **blobB anchor swap** (`evocode fsc patch-blob
 choreography; it also provides an HMI/plugin development stand. An emulator pass reduces uncertainty
 about that software/profile combination; it cannot establish that a change is safe on real hardware.
 
-Checked on 2026-11-20 against upstream `main`
+Checked on 2026-11-21 against upstream `main`
 [`d03ecd84f363`](https://github.com/herrbimmer/IDEmu/tree/d03ecd84f363): exact-match 24-03 (`007_051_002`)
 and 18-03 (`006_017_006`) shim profiles are merged; the broader multi-firmware registry in
 [PR #16](https://github.com/herrbimmer/IDEmu/pull/16) is open and unmerged, head
-[`d73b049`](https://github.com/FreZZZeR/IDEmu/commit/d73b049d8f69e146b08018e8204a516a9bb7b501), updated against main `d03ecd8`;
-GitHub reports `mergeable=true`, `clean` as of 2026-11-20. Four `007` registry profiles were
+[`e751e38`](https://github.com/FreZZZeR/IDEmu/commit/e751e38db9edc9fc65e9fd57b02662ece34c7a98), updated against main `d03ecd8`;
+GitHub reports `mergeable=true`, `clean` as of 2026-11-21. Four `007` registry profiles were
 rebuilt and cold-booted to a live HMI on that branch; this does not verify FSC acceptance.
-Our `006_016_002` still lacks a full matching SWFL set and a validated profile; neighbouring
-`006_017_006` does not establish its HMI/plugin ABI compatibility. Linux/WSL and a new 18-03 boot
-were not rerun locally. Setup and profile selection are in [dev-stand.md](dev-stand.md);
+On 2026-11-21, the exact full `006_016_002 / NBTevo_N18032I / Build 66` SWFL set was used with the
+guarded `006016` profile in our [fork](https://github.com/FreZZZeR/IDEmu/commit/e751e38db9edc9fc65e9fd57b02662ece34c7a98), outside upstream `main`.
+Cold boot, all six N57 pages and CarPlay's menus/setup passed; memory readback verified 26 patch
+words and both hook jumps/targets, with no HMI exit during a 291-second observation. A separate
+Android Auto run checked 18 checkboxes, eight radio choices, saved settings and Start/Restart/Stop
+over 587 seconds without an HMI exit. Those are UI/setup/service checks, not real phone, USB/AOA,
+Wi-Fi/Bluetooth, video/audio, physical HUD, FSC or ECU validation. A synthetic HSFZ fixture on guest
+loopback is a mock, not a diagnostic gateway supplied by IDEmu. This did not validate `NBTCarHU`.
+Direct controller/rotor input passed; default CCS input and map rendering for `006016` remain unverified.
+Linux/WSL and snapshot restore were not rerun locally. Setup and profile selection are in [dev-stand.md](dev-stand.md);
 the historical boot/SSH observations below date from 2026-11-11.
 
 ## What it can and can't test
